@@ -19,6 +19,7 @@ define(function (/* require, exports, module */) {
         prevLineIndentLength,
         prevLineIndentPattern,
         updatedIndent,
+        startPos,
         lineIndex = 0,
         indent = new Array(getIndentSize(Editor) + 1).join(' '),
         pattern,
@@ -29,17 +30,18 @@ define(function (/* require, exports, module */) {
         pattern = /[ \t]+$/g;
         prevLineIndentPattern = /^[ \t]+/;
         match = pattern.exec(line);
-        if (match) {
+        if (match || line === '') {
+          line === '' ? startPos = 0 : startPos = match.index;
           prevLineIndentLength = 0;
-          if (match.index === 0 && lineIndex !== 0) {
+          if (startPos === 0 && lineIndex !== 0) {
             prevLine = doc.getLine(lineIndex - 1);
-            prevLineIndent = prevLineIndentPattern.exec(prevLine);
+            prevLineIndent = prevLineIndentPattern.exec(prevLine) || [''];
             prevLineIndentLength = prevLineIndent[0].length;
           }
           updatedIndent = new Array(prevLineIndentLength+1).join(' ');
           doc.replaceRange(
             updatedIndent,
-            {line: lineIndex, ch: match.index},
+            {line: lineIndex, ch: startPos},
             {line: lineIndex, ch: pattern.lastIndex});
 
           line = doc.getLine(lineIndex);
