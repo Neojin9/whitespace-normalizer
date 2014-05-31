@@ -14,6 +14,11 @@ define(function (/* require, exports, module */) {
   function main(event, doc) {
     doc.batchOperation(function () {
       var line,
+        prevLine,
+        prevLineIndent,
+        prevLineIndentLength,
+        prevLineIndentPattern,
+        updatedIndent,
         lineIndex = 0,
         indent = new Array(getIndentSize(Editor) + 1).join(' '),
         pattern,
@@ -22,10 +27,18 @@ define(function (/* require, exports, module */) {
       while ((line = doc.getLine(lineIndex)) !== undefined) {
         //trim trailing whitespaces
         pattern = /[ \t]+$/g;
+        prevLineIndentPattern = /^[ \t]+/;
         match = pattern.exec(line);
         if (match) {
+          prevLineIndentLength = 0;
+          if (match.index === 0 && lineIndex !== 0) {
+            prevLine = doc.getLine(lineIndex - 1);
+            prevLineIndent = prevLineIndentPattern.exec(prevLine);
+            prevLineIndentLength = prevLineIndent[0].length;
+          }
+          updatedIndent = new Array(prevLineIndentLength+1).join(' ');
           doc.replaceRange(
-            '',
+            updatedIndent,
             {line: lineIndex, ch: match.index},
             {line: lineIndex, ch: pattern.lastIndex});
 
